@@ -1,0 +1,32 @@
+
+int joyX1=A0;
+int xValue1;
+
+int joyX2=A1;
+int xValue2;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(joyX1,INPUT);
+   pinMode(joyX2,INPUT);
+}
+
+void loop() {
+  xValue1=analogRead(joyX1);
+  
+  xValue2=analogRead(joyX2);
+
+     Serial.print(xValue1);
+     Serial.print(",");
+     Serial.print(0);
+     Serial.print("*");
+
+      Serial.print(xValue2);
+     Serial.print("/");
+     Serial.print(1023);
+     Serial.print(".");
+      
+     delay(100);
+  
+
+}
