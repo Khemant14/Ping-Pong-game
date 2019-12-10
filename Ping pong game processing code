@@ -1,0 +1,244 @@
+
+import processing.serial.*; //import the Serial library
+Serial myPort;
+
+float ellx=height/2;    //y coordinate of ball
+float elly=width/2;    //x coordinate of ball
+float xDelta=6;   //speedx
+float yDelta=6;   //speedy
+int gameLimit=10;
+
+boolean moveRight=true;
+boolean moveDown=true;
+String data="";
+int index1;
+int index2;
+int index3;
+String xValue1="";
+String yValue1="";
+String xValue2="";
+String yValue2="";
+
+int leftCount=0;
+int rightCount=0;
+int gap=5;
+int rectWidth=10;
+int rectHeight=100;
+int ballSize=40;
+
+float x1;
+float y1;
+float x2;
+float y2;
+ // y1=0;
+  //y2=1023;
+
+PFont font;
+
+void setup()
+{
+  fullScreen();
+ // size(1000,500);
+   myPort = new Serial(this,"COM3", 4800); // starts the serial communication
+   myPort.bufferUntil('.'); 
+  frameRate(60);
+  font=loadFont("Algerian-48.vlw");
+ 
+ //  background(0);
+  
+}
+void draw()
+{
+  
+  textFont(font);
+  background(0);
+  stroke(random(256),random(256),random(256));
+   //line(500,250,random(0,1000),random(0,1000));
+  //line(0,random(0,500),1000,random(0,500));
+  
+  //calling functions
+  drawEllipse();
+  showText1();    //score for first player
+  showText2();    //score for second player
+  drawRect();
+  display(); 
+  checkCondition();
+  warningLeft();
+  warningRight();
+    
+}
+void serialEvent(Serial myPort){
+  data=myPort.readStringUntil('.');
+  data=data.substring(0,data.length()-1);  
+  
+  index1=data.indexOf(',');
+  index2=data.indexOf('*');
+  index3=data.indexOf('/');
+  
+   xValue1=data.substring(0,index1);
+   yValue1=data.substring(index1+1,index2);
+   xValue2=data.substring(index2+1,index3);
+   yValue2=data.substring(index3+1,data.length());
+   
+    x1=float(xValue1);
+    y1=float(yValue1);
+    x2=float(xValue2);
+    y2=float(yValue2);
+  
+    x1=map(x1,0,1023,5,height-rectHeight-5);
+    x2=map(x2,0,1023,5,height-rectHeight-5);
+    y1=map(y1,0,1,10,10+1);
+    y2=map(y2,1023,1022,width-10-12,width-gap-1);
+   
+}
+//void mouseClicked()
+//{
+//  if(value==0)
+//  {
+//    value=random(100,255);
+//  }
+//  else value=0;
+//}
+void showText1()
+{
+  textSize(70);
+   stroke(255,0,0);
+  fill(255,0,0);
+  text(leftCount,width/4,50);
+}
+void showText2()
+{
+  textSize(70);
+ stroke(0,0,255);
+  fill(0,0,255);
+  text(rightCount,(width/4)*3,50);
+}
+void drawEllipse()
+{
+   fill(0,255,0);
+  stroke(0,255,0);
+  strokeWeight(4);
+   ellipse(elly,ellx,ballSize,ballSize);    //ball 
+}
+void drawRect()
+{
+   //stroke(255,255,0);
+ // fill(255,255,0);
+  stroke(0);
+  fill(random(256),random(256),random(256));
+  rect(width/2,0,10,height);        //Middle line
+  
+  stroke(255,0,0);
+  fill(255,0,0);
+  rect(y1,x1,rectWidth,rectHeight);    //paddle 1
+   stroke(0,0,255);
+  fill(0,0,255);
+  rect(y2,x2,rectWidth,rectHeight);    //paddle 2
+}
+void checkCondition()
+{
+  if(moveRight==true) elly=elly+yDelta;
+  else                elly=elly-yDelta;
+  if(moveDown==true) ellx=ellx+xDelta;
+  else                ellx=ellx-xDelta;
+  
+  if(elly < 10)       moveRight=true;
+  if(elly > width-10) moveRight=false;
+  
+  if(elly < 10)
+  {
+    rightCount++;
+     ellx=height/2;    
+      elly=width/2;
+  }
+   
+  if(elly > width-10)
+  {
+
+     leftCount++;
+     ellx=height/2;    
+      elly=width/2;
+  }
+ 
+  
+  if(ellx < ballSize/2)
+  {
+    xDelta=-xDelta;
+  }
+  else if(ellx > height-ballSize/2)
+  {
+    xDelta=-xDelta;
+  }
+  
+  else if(elly < y1+rectWidth+ballSize/2 && ellx >= x1-ballSize/2 && ellx <= x1+rectHeight+ballSize/2 )
+  {
+   // yDelta=yDelta+1;
+    yDelta=-yDelta;
+   
+    
+  }
+   else if(elly > y2-ballSize/2  && ellx >= x2-ballSize/2 && ellx <= x2+rectHeight+ballSize/2 )
+  {
+   // yDelta=yDelta+1;
+    yDelta=-yDelta;
+    
+  }
+  //else if(elly <= y1+rectWidth+ballSize/2 && elly > y1+rectWidth/2 && ellx >= x1-ballSize/2-1 && ellx <= x1+rectHeight+ballSize/2+1 )
+  //{
+  // yDelta=-yDelta;
+  // //moveRight=true;
+  // //moveDown=false;
+    
+  //}
+  // else if(elly > y2+rectWidth/2  && ellx >= x2-ballSize/2-1 && ellx <= x2+rectHeight+ballSize/2+1 )
+  //{
+  // yDelta=-yDelta;
+  // //moveRight=true;
+    
+  //}
+  if(leftCount==gameLimit)
+  {
+    text("Player 1 WON",width/2-175,height/2-50);
+     elly=height/2;
+     ellx=width/2;
+  }
+  if(rightCount==gameLimit)
+  {
+    text("Player 2 WON",width/2-175,height/2-50);
+     elly=width/2;
+     ellx=height/2;
+  }
+ 
+}
+void display()
+{
+   print(x1);          //printing coordinates of paddle left and paddle right respectfully
+  print(" ");
+   print(y1);
+  print(" ");
+   print(x2);
+  print(" ");
+   println(y2);
+}
+void warningLeft()
+{
+  if((leftCount==gameLimit/2 || rightCount==gameLimit/2) && leftCount < rightCount)
+  {
+    textSize(30);
+    stroke(255,0,0);
+    fill(255,0,0);
+    text("Player 1 is losing the game",50,height/5);
+    //delay(2000);
+  }
+}
+void warningRight()
+{
+  if((leftCount==gameLimit/2 || rightCount==gameLimit/2) && leftCount > rightCount)
+  {
+    textSize(30);
+    stroke(0,0,255);
+    fill(0,0,255);
+    text("Player 2 is losing the game",width/2+50,height/5);
+  }
+}
+  
